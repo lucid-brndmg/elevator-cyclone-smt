@@ -1,0 +1,51 @@
+option-trace = true;
+graph Lift4 {
+const int U = 0;
+const int D = 1;
+const int I = 2;
+int m where m == U || m == D || m == I ;
+bool l_c_0, l_c_1, l_c_2, l_c_3, l_u_0, l_u_1, l_u_2, l_d_1, l_d_2, l_d_3;
+int f where f >= 0 && f <= 3;
+
+normal state SetIdle {m = I;}
+normal state SetMotionUp {m = U;}
+normal state SetMotionDown {m = D;}
+normal state MoveDown {f -= 1;}
+normal state MoveUp {f += 1;}
+normal state L0 {l_c_0 = false; l_u_0 = l_u_0 && !(m == U);}
+normal state L1 {l_c_1 = false; l_u_1 = l_u_1 && !(m == U); l_d_1 = l_d_1 && !(m == D);}
+normal state L2 {l_c_2 = false; l_u_2 = l_u_2 && !(m == U); l_d_2 = l_d_2 && !(m == D);}
+normal state L3 {l_c_3 = false; l_d_3 = l_d_3 && !(m == D);}
+start final state D {}
+
+edge {D -> MoveUp where m == U && !((f == 0) && (l_u_0 || l_c_0) || (f == 1) && (l_u_1 || l_c_1) || (f == 2) && (l_u_2 || l_c_2) || (f == 3) && (l_c_3)) && ((f == 0) && (l_u_1 || l_u_2 || l_d_1 || l_d_2 || l_d_3 || l_c_1 || l_c_2 || l_c_3) || (f == 1) && (l_u_2 || l_d_2 || l_d_3 || l_c_2 || l_c_3) || (f == 2) && (l_d_3 || l_c_3));}
+edge {D -> MoveDown where m == D && !((f == 0) && (l_c_0) || (f == 1) && (l_d_1 || l_c_1) || (f == 2) && (l_d_2 || l_c_2) || (f == 3) && (l_d_3 || l_c_3)) && ((f == 1) && (l_u_0 || l_c_0) || (f == 2) && (l_u_0 || l_u_1 || l_d_1 || l_c_0 || l_c_1) || (f == 3) && (l_u_0 || l_u_1 || l_u_2 || l_d_1 || l_d_2 || l_c_0 || l_c_1 || l_c_2));}
+edge {D -> SetMotionDown where (f == 1) && ((m == U && !l_u_2 && !l_d_2 && !l_d_3 && !l_c_2 && !l_c_3 && !l_u_1 && !l_c_1) || m == I) && (l_u_0 || l_c_0 || l_d_1 || (m == I && l_c_1)) || (f == 2) && ((m == U && !l_d_3 && !l_c_3 && !l_u_2 && !l_c_2) || m == I) && (l_u_0 || l_u_1 || l_d_1 || l_c_0 || l_c_1 || l_d_2 || (m == I && l_c_2)) || (f == 3) && ((m == U && !l_c_3) || m == I) && (l_u_0 || l_u_1 || l_u_2 || l_d_1 || l_d_2 || l_c_0 || l_c_1 || l_c_2 || l_d_3 || (m == I && l_c_3));}
+edge {D -> SetMotionUp where (f == 0) && ((m == D && !l_c_0) || m == I) && (l_u_1 || l_u_2 || l_d_1 || l_d_2 || l_d_3 || l_c_1 || l_c_2 || l_c_3 || l_u_0 || (m == I && l_c_0)) || (f == 1) && ((m == D && !l_u_0 && !l_c_0 && !l_d_1 && !l_c_1) || m == I) && (l_u_2 || l_d_2 || l_d_3 || l_c_2 || l_c_3 || l_u_1 || (m == I && l_c_1)) || (f == 2) && ((m == D && !l_u_0 && !l_u_1 && !l_d_1 && !l_c_0 && !l_c_1 && !l_d_2 && !l_c_2) || m == I) && (l_d_3 || l_c_3 || l_u_2 || (m == I && l_c_2));}
+edge {D -> SetIdle where !(m == I) && !l_u_0 && !l_u_1 && !l_u_2 && !l_d_1 && !l_d_2 && !l_d_3 && !l_c_0 && !l_c_1 && !l_c_2 && !l_c_3;}
+edge {D -> L0 where f == 0 && !(m == I) && (l_c_0 || (m == U && l_u_0));}
+edge {D -> L1 where f == 1 && !(m == I) && (l_c_1 || (m == U && l_u_1) || (m == D && l_d_1));}
+edge {D -> L2 where f == 2 && !(m == I) && (l_c_2 || (m == U && l_u_2) || (m == D && l_d_2));}
+edge {D -> L3 where f == 3 && !(m == I) && (l_c_3 || (m == D && l_d_3));}
+edge {SetMotionUp -> D}
+edge {SetMotionDown -> D}
+edge {SetIdle -> D}
+edge {MoveUp -> D}
+edge {MoveDown -> D}
+edge {L0 -> D}
+edge {L1 -> D}
+edge {L2 -> D}
+edge {L3 -> D}
+edge {D -> D where m == I && !l_u_0 && !l_u_1 && !l_u_2 && !l_d_1 && !l_d_2 && !l_d_3 && !l_c_0 && !l_c_1 && !l_c_2 && !l_c_3;}
+
+
+goal {
+assert m == I;
+assert initial(f) == 2;
+assert initial(m) == I;
+assert !initial(l_c_0) && !initial(l_c_1) && initial(l_c_2) && !initial(l_c_3);
+assert !initial(l_u_0) && !initial(l_u_1) && !initial(l_u_2);
+assert !initial(l_d_1) && initial(l_d_2) && !initial(l_d_3);
+check for 34 
+}
+}

@@ -22,6 +22,25 @@ To generate a 3-floor static elevator model that initially idled at L1 with init
 node ./scripts/liftblast.js '{"optN":3,"optK":26,"optPropCheck":false,"optDebug":false,"optEffect":false,"optOut":"example.cyclone","initFloor":1,"initReqUp":[1],"initReqDown":[1],"initReqCar":[0],"initMode":"I"}'
 ```
 
+To solve a Cyclone model using Z3 by Cyclone:
+```shell
+# optionally one needs to use -Xss parameter to expand size of stack
+java -jar cyclone.jar in.cyclone
+```
+
+To compile a Cyclone model to SMT2 via CycloneR:
+```shell
+cyclone-native in.cyclone --codegen out.smt2
+```
+
+To translate a LIA Cyclone model to SMT2 of BV theory via CycloneR:
+```shell
+# generates a SMT2 file with integers replaced to 8-bit signed BV
+cyclone-native in.cyclone --codegen out.smt2 --option-bv-int --option-bv-int-size 8
+```
+
+For other usage please see related documents. 
+
 ### Properties
 
 Property checking specifications are placed at `/prop` of 3, 5, 10, 15 floors respectively, where `stc` denotes static model, `dyn` denotes dynamic model. 

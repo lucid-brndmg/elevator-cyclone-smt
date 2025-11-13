@@ -16,7 +16,12 @@ let initFloor = 1
 let initMode = mIdle
 let initReqCar = [0, 1, 2]
 let initReqUp = [0, 1]
-let initReqDown = [1, 2] 
+let initReqDown = [1, 2]
+
+let initPropHalt = null // [0]
+let initPropIdle = null // [0, 1, 2]
+let initPropLH = null // [1, 2]
+let initPropMS = null // [0, 1, 2, 3] // 0, 1, 2 (U, D), 3 (U, D)
 
 const input = process.argv[2].trim()
 if (input) {
@@ -38,6 +43,11 @@ if (input) {
       if (conf.optPropAgg != null) optPropAgg = conf.optPropAgg
       if (conf.optEffect != null) optEffect = conf.optEffect
       if (conf.optOut != null) optOut = conf.optOut
+      if (conf.initPropHalt != null) initPropHalt = conf.initPropHalt
+      if (conf.initPropIdle != null) initPropIdle = conf.initPropIdle
+      if (conf.initPropLH != null) initPropLH = conf.initPropLH
+      if (conf.initPropMS != null) initPropMS = conf.initPropMS
+
     } catch (e) {
       console.log("Invalid JSON config input:", input);
       process.exit(0)
@@ -590,7 +600,14 @@ const expand1 = (f, v = vFloor) => rangeN.map(i => {
   return null
 }).filter(it => it).join(" && ")
 
-const exprPropMS1D = `(${isMode(mDown)}) => (${vFloor} <= ${vFloorSD} && ${expand2((f, fsw) => {
+const exprPropMS1 = `${vFloorSU} <= ${vFloorSD}`
+const propMS1 = mkInvariantProp(exprPropMS1)
+
+const exprPropMS2 = `${vModePrev} != ${vMode}`
+
+const propMS2 = mkInvariantProp(exprPropMS2, [stSwitchDown, stSwitchUp, stSwitchIdle])
+
+const exprPropMS3D = `(${isMode(mDown)}) => (${vFloor} <= ${vFloorSD} && ${expand2((f, fsw) => {
   if (f < fsw) {
     const xs = []
     for (let i = f + 1; i <= fsw; i ++) {
@@ -603,9 +620,9 @@ const exprPropMS1D = `(${isMode(mDown)}) => (${vFloor} <= ${vFloorSD} && ${expan
   }
 }, vFloor, vFloorSD)})`
 
-const propMS1D = mkInvariantProp(exprPropMS1D)
+const propMS3D = mkInvariantProp(exprPropMS3D)
 
-const exprPropMS1U = `(${isMode(mUp)}) => (${vFloorSU} <= ${vFloor} && ${expand2((f, fsw) => {
+const exprPropMS3U = `(${isMode(mUp)}) => (${vFloorSU} <= ${vFloor} && ${expand2((f, fsw) => {
   if (fsw < f) {
     const xs = []
     for (let i = fsw; i < f; i ++) {
@@ -618,15 +635,8 @@ const exprPropMS1U = `(${isMode(mUp)}) => (${vFloorSU} <= ${vFloor} && ${expand2
   }
 }, vFloor, vFloorSU)})`
 
-const propMS1U = mkInvariantProp(exprPropMS1U)
+const propMS3U = mkInvariantProp(exprPropMS3U)
 
-
-const exprPropMS2 = `${vFloorSU} <= ${vFloorSD}`
-const propMS2 = mkInvariantProp(exprPropMS2)
-
-const exprPropMS3 = `${vModePrev} != ${vMode}`
-
-const propMS3 = mkInvariantProp(exprPropMS3, [stSwitchDown, stSwitchUp, stSwitchIdle])
 
 const exprPropMS4D = `${isMode(mDown)} && ` + expand1(f => {
   const ys = []
@@ -734,32 +744,75 @@ const propMS4U = mkInvariantProp(exprPropMS4U, [stFloorIncr, stSwitchUp])
 const invDecl = []
 
 if (!optEffect) {
-  invDecl.push(
-    "// halt",
-    propHalt,
-    "\n",
-    "// idling",
-    propIdle1,
-    propIdle2,
-  )
+  if (initPropHalt == null || initPropHalt.includes(0)) {
+    invDecl.push(propHalt)
+  }
+
+  if (initPropIdle == null || initPropIdle.includes(0)) {
+    invDecl.push(propIdle1)
+  }
+
+  if (initPropIdle == null || initPropIdle.includes(1)) {
+    invDecl.push(propIdle2)
+  }
+
+
+  // invDecl.push(
+  //   "// halt",
+  //   propHalt,
+  //   "\n",
+  //   "// idling",
+  //   propIdle1,
+  //   propIdle2,
+  // )
 }
 
-invDecl.push(
-  propIdle3,
-  "\n",
-  "// level-handling",
-  propLH1,
-  propLH2,
-  "\n",
-  "// mode-switching",
-  propMS1U,
-  propMS1D,
-  propMS2,
-  propMS3,
-  propMS4U,
-  propMS4D,
-  "\n"
-)
+if (initPropIdle == null || initPropIdle.includes(2)) {
+  invDecl.push(propIdle3)
+}
+
+if (initPropLH == null || initPropLH.includes(0)) {
+  invDecl.push(propLH1)
+}
+
+if (initPropLH == null || initPropLH.includes(1)) {
+  invDecl.push(propLH2)
+}
+
+if (initPropMS == null || initPropMS.includes(0)) {
+  invDecl.push(propMS1)
+}
+
+
+if (initPropMS == null || initPropMS.includes(1)) {
+  invDecl.push(propMS2)
+}
+
+
+if (initPropMS == null || initPropMS.includes(2)) {
+  invDecl.push(propMS3U, propMS3D)
+}
+
+if (initPropMS == null || initPropMS.includes(3)) {
+  invDecl.push(propMS4U, propMS4D)
+}
+
+// invDecl.push(
+//   propIdle3,
+//   "\n",
+//   "// level-handling",
+//   propLH1,
+//   propLH2,
+//   "\n",
+//   "// mode-switching",
+//   propMS1U,
+//   propMS1D,
+//   propMS2,
+//   propMS3,
+//   propMS4U,
+//   propMS4D,
+//   "\n"
+// )
 
 if (optPropCheck && !optPropAgg) {
   console.log(invDecl.join("\n"));

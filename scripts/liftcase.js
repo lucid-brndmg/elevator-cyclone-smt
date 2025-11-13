@@ -15,7 +15,7 @@ const U = "U"
 const D = "D"
 const I = "I"
 
-const outdir = path.join("../scene")
+const outdir = path.join("../tmp_scene")
 
 const range = (lo, hi) => new Array(hi - lo).fill().map((_, i) => i + lo)
 

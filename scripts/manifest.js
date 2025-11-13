@@ -6,12 +6,15 @@ const to_sec = 2 * 60 * 60
 
 const lia_solvers = [
   {id: "z3", h: (f, sfx = "") => `z3 ${f} -st -T:${to_sec} &>> out_z3${sfx}.txt\necho "fin ${f}" >> out_z3${sfx}.txt\n`},
+  {id: "osmt", h: (f, sfx = "") => `echo "(set-logic QF_LIA)" > osmt${sfx}.smt2\ncat ${f} >> osmt${sfx}.smt2\n/usr/bin/time -ao out_osmt_time${sfx}.txt opensmt osmt${sfx}.smt2 &>> out_osmt${sfx}.txt \necho "fin ${f}" >> out_osmt${sfx}.txt\n`},
+  {id: "y2", h: (f, sfx = "") => `echo "(set-logic QF_LIA)" > y2${sfx}.smt2\ncat ${f} >> y2${sfx}.smt2\nyices-smt2 -s y2${sfx}.smt2 &>> out_y2${sfx}.txt\necho "fin ${f}" >> out_y2${sfx}.txt\n`}
 ]
 
 const bv_solvers = [
   {id: "z3bv", h: (f, sfx = "") => `z3 ${f} -st -T:${to_sec} &>> out_z3bv${sfx}.txt\necho "fin ${f}" >> out_z3bv${sfx}.txt\n`},
   {id: "bitwuzla", h: (f, sfx = "") => `bitwuzla ${f} -v 1 -t ${to_sec * 1000} &>> out_bitwuzla${sfx}.txt\necho "fin ${f}" >> out_bitwuzla${sfx}.txt\n`},
-  {id: "stp", h: (f, sfx = "") => `timeout ${to_sec} stp ${f} -t &>> out_stp${sfx}.txt\necho "fin ${f}" >> out_stp${sfx}.txt\n`}
+  {id: "stp", h: (f, sfx = "") => `timeout ${to_sec} stp ${f} -t &>> out_stp${sfx}.txt\necho "fin ${f}" >> out_stp${sfx}.txt\n`},
+  {id: "y2bv", h: (f, sfx = "") => `echo "(set-logic QF_BV)" > y2bv${sfx}.smt2\ncat ${f} >> y2bv${sfx}.smt2\nyices-smt2 -s y2bv${sfx}.smt2 &>> out_y2bv${sfx}.txt\necho "fin ${f}" >> out_y2bv${sfx}.txt\n`}
 ]
 
 // option-timeout currently isn't handled in cyclone-native thus coreutils timeout command do the trick (bit hack)

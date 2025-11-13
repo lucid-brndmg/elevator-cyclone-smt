@@ -1,1 +1,4 @@
 *.smt2
+tmp_scene
+tmp_prop
+.z3-trace

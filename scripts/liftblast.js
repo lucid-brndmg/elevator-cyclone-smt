@@ -540,6 +540,9 @@ const exprPropHalt = `${isMode(mIdle)}
 
 const propHalt = mkAssertProp(exprPropHalt)
 
+const exprPropHaltSimple = `${isMode(mIdle)}`
+const propHaltSimple = `assert !(${exprPropHaltSimple});`
+
 const exprPropIdle1 = `sc_${stSwitchIdle} <= 1 && (sc_${stSwitchIdle} == 1) => (${isMode(mIdle)} && ${setBlast([vReqCar, vReqUp, vReqDown]).map(it => `!${it}`).join(" && ")})`
 const propIdle1 = mkInvariantProp(exprPropIdle1)
 
@@ -746,6 +749,10 @@ const invDecl = []
 if (!optEffect) {
   if (initPropHalt == null || initPropHalt.includes(0)) {
     invDecl.push(propHalt)
+  }
+
+  if (initPropHalt == null || initPropHalt.includes(1)) {
+    goalStmt.push(propHaltSimple)
   }
 
   if (initPropIdle == null || initPropIdle.includes(0)) {

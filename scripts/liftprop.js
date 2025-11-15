@@ -10,7 +10,7 @@ const {
 
 const outdir = path.resolve("../tmp_prop_new")
 
-const codegen = true
+const codegen = false
 
 // const sh_cyclone = {}
 const sh_lia = {}
@@ -87,7 +87,7 @@ for (let prop of props) {
 
 
 
-    if (gen_dynamic) {
+    if (gen_dynamic && sfx.includes("l") && sfx.includes("m")) {
       for (let k of ks) {
         const base = `${base_dyn}_${k}.cyclone`
         const conf_dyn = {
@@ -165,7 +165,7 @@ const agg = Object.values(sh_lia).flat()
 
 
 for (let {id, lines} of agg) {
-  fs.writeFileSync(path.join(outdir, `exec_${id}.sh`), lines.sort((a, b) => (a.includes("dyn") - b.includes("dyn"))).join("\n"), "utf8")
+  fs.writeFileSync(path.join(outdir, `exec_${id}.sh`), lines.sort((a, b) => (b.includes("dyn") - a.includes("dyn"))).join("\n"), "utf8")
 }
 
 console.log("done");

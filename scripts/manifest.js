@@ -9,7 +9,8 @@ const to_sec = 2 * 60 * 60
 const lia_solvers = [
   {id: "z3", h: (f, sfx = "") => `z3 ${f} -st -T:${to_sec} &>> out_z3${sfx}.txt\necho "fin ${f}" >> out_z3${sfx}.txt\n`},
   {id: "osmt", h: (f, sfx = "") => `echo "(set-logic QF_LIA)" > osmt${sfx}.smt2\ncat ${f} >> osmt${sfx}.smt2\n/usr/bin/time -ao out_osmt_time${sfx}.txt timeout ${to_sec} opensmt osmt${sfx}.smt2 &>> out_osmt${sfx}.txt \necho "fin ${f}" >> out_osmt${sfx}.txt\n`},
-  {id: "y2", h: (f, sfx = "") => `echo "(set-logic QF_LIA)" > y2${sfx}.smt2\ncat ${f} >> y2${sfx}.smt2\nyices-smt2 -t ${to_sec} -s y2${sfx}.smt2 &>> out_y2${sfx}.txt\necho "fin ${f}" >> out_y2${sfx}.txt\n`}
+  {id: "y2", h: (f, sfx = "") => `echo "(set-logic QF_LIA)" > y2${sfx}.smt2\ncat ${f} >> y2${sfx}.smt2\nyices-smt2 -t ${to_sec} -s y2${sfx}.smt2 &>> out_y2${sfx}.txt\necho "fin ${f}" >> out_y2${sfx}.txt\n`},
+  {id: "cvc5", h: (f, sfx = "") => `echo "(set-logic QF_LIA)" > c5${sfx}.smt2\ncat ${f} >> c5${sfx}.smt2\ncvc5 --stats --tlimit ${to_sec * 1000} c5${sfx}.smt2 &>> out_c5${sfx}.txt\necho "fin ${f}" >> out_c5${sfx}.txt\n`}
 ]
 
 const bv_solvers = [

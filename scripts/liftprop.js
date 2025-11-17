@@ -8,7 +8,7 @@ const {
   compile_cyclone_native,
 } = require("./manifest")
 
-const outdir = path.resolve("../tmp_prop_new")
+const outdir = path.resolve("../../tmp_exec")
 
 const codegen = false
 

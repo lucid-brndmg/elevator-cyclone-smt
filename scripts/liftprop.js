@@ -10,15 +10,18 @@ const {
 
 const outdir = path.resolve("../../tmp_exec")
 
-const codegen = false
+const codegen = true
 
 // const sh_cyclone = {}
 const sh_lia = {}
 const sh_bv = {}
 const sh_gen_cyclone = {id: "cyclone_smt2", lines: []}
 
-const gen_static = true
+const gen_static = false
 const gen_dynamic = true
+
+const gen_lia = false
+const gen_bv = true
 
 const ns = [3, 5, 10, 15]
 const ks = [4, 8, 16, 32]
@@ -110,7 +113,10 @@ for (let prop of props) {
 }
 
 for (let [base, sep, conf] of bc) {
-  const bits = Math.ceil(Math.log2(8 * conf.optN + 2 + 1)) + 1
+  const bits = Math.max(
+    conf.optK ? (Math.ceil(Math.log2(conf.optK)) + 1) : (Math.ceil(Math.log2(8 * conf.optN + 2 + 1)) + 1),
+    Math.ceil(Math.log2(conf.optN)) + 1
+  )
   const base_bv = `${base}.bv.smt2`
   const base_lia = `${base}.lia.smt2`
   const base_lia_cyclone = `${base}_gen.smt2`
@@ -119,15 +125,16 @@ for (let [base, sep, conf] of bc) {
     const h_gen = gen_cyclone(conf)
     console.log("gen cyclone", h_gen);
 
-    // conf.optOut path.join(outdir, base_lia)
-    const h_cmp_lia = compile_cyclone_native(conf.optOut, path.join(outdir, base_lia))
-    console.log("gen lia", h_cmp_lia);
+    if (gen_lia) {
+      // conf.optOut path.join(outdir, base_lia)
+      const h_cmp_lia = compile_cyclone_native(conf.optOut, path.join(outdir, base_lia))
+      console.log("gen lia", h_cmp_lia);
+    }
 
-    const h_cmp_bv = compile_cyclone_native(conf.optOut, path.join(outdir, base_bv), bits)
-    console.log("gen bv", h_cmp_bv);
-
-    // const h_cyclone = compile_cyclone(base, outdir)
-    // console.log("gen cyclone smt", h_cyclone)
+    if (gen_bv) {
+      const h_cmp_bv = compile_cyclone_native(conf.optOut, path.join(outdir, base_bv), bits)
+      console.log("gen bv", h_cmp_bv);
+    }
   }
 
   sh_gen_cyclone.lines.push(`cyclone-gen ${base}`)

@@ -1,5 +1,10 @@
 const fs = require("fs")
 
+const tvOff = "off"
+const tvPath = "path"
+const tvCount = "count"
+const tvGen = "gen"
+
 let optN = 3
 let optK = 0
 let optEffect = false
@@ -7,6 +12,7 @@ let optDebug = false
 let optPropCheck = true
 let optPropAgg = true
 let optOut = null
+let optTestValidation = tvOff
 
 const mUp = "U"
 const mDown = "D"
@@ -23,7 +29,7 @@ let initPropIdle = null // [0, 1, 2]
 let initPropLH = null // [1, 2]
 let initPropMS = null // [0, 1, 2, 3] // 0, 1, 2 (U, D), 3 (U, D)
 
-const input = process.argv[2].trim()
+const input = (process.argv[2] ?? "").trim()
 if (input) {
   const n = parseInt(input)
   if (n) {
@@ -43,10 +49,12 @@ if (input) {
       if (conf.optPropAgg != null) optPropAgg = conf.optPropAgg
       if (conf.optEffect != null) optEffect = conf.optEffect
       if (conf.optOut != null) optOut = conf.optOut
+      if (conf.optTestValidation != null) optTestValidation = conf.optTestValidation
       if (conf.initPropHalt != null) initPropHalt = conf.initPropHalt
       if (conf.initPropIdle != null) initPropIdle = conf.initPropIdle
       if (conf.initPropLH != null) initPropLH = conf.initPropLH
       if (conf.initPropMS != null) initPropMS = conf.initPropMS
+
 
     } catch (e) {
       console.log("Invalid JSON config input:", input);
@@ -67,18 +75,29 @@ if (!optDebug && !optEffect && (optK % 2 !== 0)) {
   process.exit(0)
 }
 
+const isTestValidation = optTestValidation !== tvOff
+
+if (optPropCheck && isTestValidation) {
+  console.log("property check OR test validation only");
+  process.exit(0)
+}
+
+
+
 console.log("floors:", optN);
 console.log("steps:", optK);
 console.log("debug:", optDebug);
 console.log("effect:", optEffect);
 console.log("property check:", optPropCheck);
 console.log("property aggregation:", optPropAgg);
+console.log("test validation:", optTestValidation);
+
 
 const kMax = 8 * optN + 2
 
 if (!optEffect) {
   console.log("k max:", kMax);
-} 
+}
 
 // else if (optPropCheck) {
 //   console.log("unable to specify properties in effect mode");
@@ -120,7 +139,7 @@ const stFloorDispatch = "D"
 const rangeN = new Array(optN).fill(undefined).map((_, i) => i)
 
 const isDown = s => [vEffDown, vReqDown, vAccDown, vSwDown].includes(s)
-const isUp = s => [vEffUp, vReqUp, vAccUp, vSwUp].includes(s) 
+const isUp = s => [vEffUp, vReqUp, vAccUp, vSwUp].includes(s)
 
 const pfReq = `l`
 const pfEff = `r`
@@ -136,7 +155,7 @@ const pfReplace = (v, pf) => {
 const setBlast = (sets, lo, hi) => sets.map(s => {
   const sliceRange = isDown(s)
     ? [1]
-    : isUp(s) 
+    : isUp(s)
       ? [0, rangeN.length - 1]
       : []
   return rangeN
@@ -206,7 +225,7 @@ const floorsSliceSwitch = (isSwitchUp) => {
       const intervalInv = isSwitchUp ? [i + 1, optN] : [0, i]
       const current = setSelect(isSwitchUp ? [vReqUp] : [vReqDown], i)
       const currentOpp = setSelect(isSwitchUp ? [vReqDown] : [vReqUp], i)
-      
+
       const nonIdleEmpty = setBlast(s, ...interval)
         .concat(currentOpp)
         .concat([`${vReqCar}_${i}`])
@@ -224,8 +243,8 @@ const floorsSliceSwitch = (isSwitchUp) => {
 
       const nonEmpty = setBlast(s, ...intervalInv)
         .concat(current)
-        // .concat([`${vReqCar}_${i}`])
-      
+      // .concat([`${vReqCar}_${i}`])
+
 
       if (nonEmpty.length) {
         xs.push(`(${nonEmpty.join(" || ")} || (${isMode(mIdle)} && ${vReqCar}_${i}))`)
@@ -244,7 +263,7 @@ const isMode = m => `${vMode} == ${m}`
 const mkState = (id, _stmt, _mods) => {
   const stmt = [...(_stmt ?? [])]
   const mods = [...(_mods ?? [])]
-  if (optPropCheck) {
+  if (optPropCheck || optTestValidation === tvCount) {
     stmt.push(`sc += 1`)
     stmt.push(`sc_${id} += 1`)
   }
@@ -253,8 +272,8 @@ const mkState = (id, _stmt, _mods) => {
 
 const mkEdge = (s, t, c) => `edge {${s} -> ${t}${c ? ` where ${c};` : ""}}`
 
-// const switchStmt = optPropCheck 
-//   ? [`${vFloorPrev} = ${vFloor}`] 
+// const switchStmt = optPropCheck
+//   ? [`${vFloorPrev} = ${vFloor}`]
 //   : []
 
 let stmtSwitchUp = [`${vMode} = ${mUp}`]
@@ -292,18 +311,18 @@ const floorHandleStates = rangeN
     const xs = [
       `${vReqCar}_${i} = false`
     ]
-    if (optEffect) {
+    if (optEffect && optPropCheck) {
       xs.push(`${vSwCar}_${i} = false`)
     }
     if (i !== fMax) {
       xs.push(`${vReqUp}_${i} = ${vReqUp}_${i} && !(${isMode(mUp)})`)
-      if (optEffect) {
+      if (optEffect && optPropCheck) {
         xs.push(`${vSwUp}_${i} = ${vSwUp}_${i} && !(${isMode(mUp)})`)
       }
     }
     if (i !== 0) {
       xs.push(`${vReqDown}_${i} = ${vReqDown}_${i} && !(${isMode(mDown)})`)
-      if (optEffect) {
+      if (optEffect && optPropCheck) {
         xs.push(`${vSwDown}_${i} = ${vSwDown}_${i} && !(${isMode(mDown)})`)
       }
     }
@@ -336,10 +355,12 @@ const varDecl = [
   `int ${vFloor} where ${vFloor} >= 0 && ${vFloor} <= ${fMax};`
 ]
 
-if (optPropCheck) {
+if (optPropCheck || optTestValidation === tvCount) {
   varDecl.push(`int sc = 0, ${states.map(s => `sc_${s} = 0`).join(", ")};`)
-  varDecl.push(`int ${vFloorSU} = ${vFloor} where ${vFloorSU} >= 0 && ${vFloorSU} <= ${fMax};`)
-  varDecl.push(`int ${vFloorSD} = ${vFloor} where ${vFloorSD} >= 0 && ${vFloorSD} <= ${fMax};`)
+  if (optPropCheck) {
+    varDecl.push(`int ${vFloorSU} = ${vFloor} where ${vFloorSU} >= 0 && ${vFloorSU} <= ${fMax};`)
+    varDecl.push(`int ${vFloorSD} = ${vFloor} where ${vFloorSD} >= 0 && ${vFloorSD} <= ${fMax};`)
+  }
 }
 
 const stateDecl = [
@@ -355,7 +376,7 @@ const stateDecl = [
 
 const edgeDecl = [
   mkEdge(stFloorDispatch, stFloorIncr, `${isMode(mUp)} && !(${currentFloorActive([vReqUp, vReqCar])}) && (${floorsSliceNotEmpty([vReqUp, vReqDown, vReqCar], true)})`),
-  
+
   mkEdge(stFloorDispatch, stFloorDecr, `${isMode(mDown)} && !(${currentFloorActive([vReqDown, vReqCar])}) && (${floorsSliceNotEmpty([vReqUp, vReqDown, vReqCar], false)})`),
 
   mkEdge(stFloorDispatch, stSwitchDown, floorsSliceSwitch(false)),
@@ -368,24 +389,24 @@ const edgeDecl = [
 
 
 for (let i of rangeN) {
-    // edgeDecl.push(stFloorDispatch, `${stFloorHandle}${i}`, `(${isMode(mIdle)} && ${floorOnlyI(i)}) || (!(${isMode(mIdle)}) && (${floorIActive([vReqUp, vReqDown, vReqCar], i)}))`)
-    const up = floorIActive([vReqUp], i)
-    const down = floorIActive([vReqDown], i)
-    const xs = [
-      floorIActive([vReqCar], i)
-    ]
-    if (up) {
-      xs.push(`(${isMode(mUp)} && ${up})`)
-    }
-    if (down) {
-      xs.push(`(${isMode(mDown)} && ${down})`)
-    }
-    edgeDecl.push(mkEdge(
-      stFloorDispatch, 
-      `${stFloorHandle}${i}`,
-      `${vFloor} == ${i} && !(${isMode(mIdle)}) && (${xs.join(" || ")})`
-    ))
+  // edgeDecl.push(stFloorDispatch, `${stFloorHandle}${i}`, `(${isMode(mIdle)} && ${floorOnlyI(i)}) || (!(${isMode(mIdle)}) && (${floorIActive([vReqUp, vReqDown, vReqCar], i)}))`)
+  const up = floorIActive([vReqUp], i)
+  const down = floorIActive([vReqDown], i)
+  const xs = [
+    floorIActive([vReqCar], i)
+  ]
+  if (up) {
+    xs.push(`(${isMode(mUp)} && ${up})`)
   }
+  if (down) {
+    xs.push(`(${isMode(mDown)} && ${down})`)
+  }
+  edgeDecl.push(mkEdge(
+    stFloorDispatch,
+    `${stFloorHandle}${i}`,
+    `${vFloor} == ${i} && !(${isMode(mIdle)}) && (${xs.join(" || ")})`
+  ))
+}
 
 
 
@@ -418,23 +439,42 @@ if (optEffect) {
   //   mkEdge(stEffect, stFloorDispatch),
   // )
   stateDecl.push(mkState(
-    stFloorDispatch, 
+    stFloorDispatch,
     rangeN
       .map(i => setSelect([vReqUp, vReqDown, vReqCar], i).map(v => {
         const eff = pfReplace(v, pfEff)
-        const acc = pfReplace(v, pfAcc)
-        return [
-          `fresh(${eff})`, 
-          `${v} = ${v} || ${eff}`,
-          `${acc} = ${acc} || ${eff}`
+        const xs = [
+          `fresh(${eff})`,
+          `${v} = ${v} || ${eff}`
         ]
+        if (optPropCheck) {
+          const acc = pfReplace(v, pfAcc)
+          xs.push(`${acc} = ${acc} || ${eff}`)
+        }
+        if (isTestValidation) {
+          // no repeat floor handling
+          xs.push(`(${vFloor} == ${i}) => !${eff}`)
+        }
+
+        return xs
       }).flat())
       .flat(),
-      ["start", "final"]
+    ["start", "final"]
   ))
 
+  const vg = [
+    setBlast([vEffCar, vEffDown, vEffUp]).join(", "),
+  ]
+
+  if (optPropCheck) {
+    vg.push(
+      setBlast([vAccCar, vAccUp, vAccDown]).map(v => `${v} = ${pfReplace(v, pfReq)}`).join(", "),
+      setBlast([vSwUp, vSwDown, vSwCar]).map(v => `${v} = ${pfReplace(v, pfReq)}`).join(", ")
+    )
+  }
+
   varDecl.push(
-    `bool ${setBlast([vEffCar, vEffDown, vEffUp]).join(", ")}, ${setBlast([vAccCar, vAccUp, vAccDown]).map(v => `${v} = ${pfReplace(v, pfReq)}`).join(", ")}, ${setBlast([vSwUp, vSwDown, vSwCar]).map(v => `${v} = ${pfReplace(v, pfReq)}`).join(", ")};`
+    `bool ${vg.join(", ")};`
   )
 } else {
   // edgeDecl.push(
@@ -452,7 +492,7 @@ if (optEffect) {
 
 const goalStmt = []
 
-if (!optDebug && !optPropCheck && !optEffect) {
+if (!optDebug && !optPropCheck && !optEffect && !isTestValidation) {
   // expect the lift halts with idle
   goalStmt.push(`assert ${isMode(mIdle)};`)
 }
@@ -465,7 +505,6 @@ if (initFloor != null && !optPropCheck) {
 if (initMode && !optPropCheck) {
   goalStmt.push(`assert initial(${vMode}) == ${initMode};`)
   console.log("initial mode:", initMode);
-  
 }
 
 const mkBlast = (xs, f, k) => {
@@ -514,12 +553,10 @@ if (initReqDown && !optPropCheck) {
   }
 }
 
-const reach = optDebug || optEffect 
+const reach = optDebug || optEffect
   ? `reach (${states.join(", ")})`
   : ``
 const kFin = (optK || kMax)
-
-goalStmt.push(`check for ${kFin} ${reach}`)
 
 
 
@@ -529,7 +566,7 @@ const mkInvariantProp = (expr, st) => {
   return `invariant I${id} {${expr};}${st ? ` in (${st.join(", ")})` : ""}`
 }
 
-const mkAssertProp = expr => optPropAgg 
+const mkAssertProp = expr => optPropAgg
   ? `invariant I${inv ++} {(sc == ${kFin + 1}) => (${expr});} // agg`
   : `assert !(${expr});`
 
@@ -573,13 +610,13 @@ const mkExprPropLH2 = i => {
   const initDown = optEffect ? `${vAccDown}_${i}` : `initial(${down})`
   const initCar = optEffect ? `${vAccCar}_${i}` : `initial(${car})`
 
-  const upExpr = up 
+  const upExpr = up
     ? `!${up} && (${initUp} || ${initCar})`
     : initCar
-  const downExpr = down 
+  const downExpr = down
     ? `!${down} && (${initDown} || ${initCar})`
     : initCar
-  
+
 
   return `!${car} && !(${isMode(mIdle)}) && ((${isMode(mUp)}) => (${upExpr})) && ((${isMode(mDown)}) => (${downExpr}))`
 }
@@ -591,7 +628,7 @@ const expand2 = (f, v1 = vFloor, v2 = vFloorSD) => rangeN.map(i => rangeN.map(j 
   const x = f(i, j)
   if (x) {
     return `((${v1} == ${i} && ${v2} == ${j}) => (${x}))`
-  } 
+  }
   return null
 }).filter(it => it)).flat().join(" && ")
 
@@ -825,6 +862,49 @@ if (optPropCheck && !optPropAgg) {
   console.log(invDecl.join("\n"));
 }
 
+const v = x => x ? 1 : 0
+
+const floorCount = rangeN.map(i => v(initReqDown.includes(i)) + v(initReqUp.includes(i)))
+
+let condStmt = ""
+
+switch (optTestValidation) {
+  case tvCount: {
+    const disj = floorCount.map((cnt, i) => {
+      if (cnt !== 0) {
+        return `!(sc_${stFloorHandle}${i} >= ${cnt})`
+      } else {
+        return null
+      }
+    }).filter(it => it)
+
+    if (disj.length) {
+      goalStmt.push(`assert ${disj.join(" || ")};`)
+    } else {
+      console.log("invalid validation: empty conditions");
+      process.exit()
+    }
+    break
+  }
+  case tvPath: {
+    const disj = floorCount.map((cnt, i) => {
+      if (cnt !== 0) {
+        return `!${stFloorHandle}${i}`
+      }
+      return null
+    }).filter(it => it)
+    if (disj.length) {
+      condStmt = `condition (${disj.join(" || ")})`
+    } else {
+      console.log("invalid validation: empty conditions");
+      process.exit()
+    }
+    break
+  }
+}
+
+const checkStmt = `check for ${kFin} ${condStmt} ${reach}`
+
 const spec = `option-trace = true;
 graph Lift${optN} {
 ${varDecl.join("\n")}
@@ -836,6 +916,7 @@ ${edgeDecl.join("\n")}
 ${optPropCheck && optPropAgg ? invDecl.join("\n") : ""}
 goal {
 ${goalStmt.join("\n")}
+${checkStmt}
 }
 }`
 

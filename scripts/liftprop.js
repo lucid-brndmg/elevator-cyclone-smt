@@ -162,8 +162,6 @@ for (let [base, sep, conf] of bc) {
     bv_solvers[i].h(base_bv, sep),
     `echo "done ${base_bv}"`
   ))
-
-
 }
 
 const agg = Object.values(sh_lia).flat()

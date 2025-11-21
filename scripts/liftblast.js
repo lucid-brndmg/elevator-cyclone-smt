@@ -2,7 +2,6 @@ const fs = require("fs")
 
 const tvOff = "off"
 const tvPath = "path"
-const tvCount = "count"
 const tvGen = "gen"
 
 let optN = 3
@@ -10,7 +9,7 @@ let optK = 0
 let optEffect = false
 let optDebug = false
 let optPropCheck = true
-let optPropAgg = true
+// let optPropAgg = true
 let optOut = null
 let optTestValidation = tvOff
 
@@ -24,8 +23,8 @@ let initReqCar = [0, 1, 2]
 let initReqUp = [0, 1]
 let initReqDown = [1, 2]
 
-let initPropHalt = null // [0]
-let initPropIdle = null // [0, 1, 2]
+// let initPropHalt = null // [0]
+// let initPropIdle = null // [0, 1, 2]
 let initPropLH = null // [1, 2]
 let initPropMS = null // [0, 1, 2, 3] // 0, 1, 2 (U, D), 3 (U, D)
 
@@ -46,12 +45,12 @@ if (input) {
       if (conf.optK != null) optK = conf.optK
       if (conf.optDebug != null) optDebug = conf.optDebug
       if (conf.optPropCheck != null) optPropCheck = conf.optPropCheck
-      if (conf.optPropAgg != null) optPropAgg = conf.optPropAgg
+      // if (conf.optPropAgg != null) optPropAgg = conf.optPropAgg
       if (conf.optEffect != null) optEffect = conf.optEffect
       if (conf.optOut != null) optOut = conf.optOut
       if (conf.optTestValidation != null) optTestValidation = conf.optTestValidation
-      if (conf.initPropHalt != null) initPropHalt = conf.initPropHalt
-      if (conf.initPropIdle != null) initPropIdle = conf.initPropIdle
+      // if (conf.initPropHalt != null) initPropHalt = conf.initPropHalt
+      // if (conf.initPropIdle != null) initPropIdle = conf.initPropIdle
       if (conf.initPropLH != null) initPropLH = conf.initPropLH
       if (conf.initPropMS != null) initPropMS = conf.initPropMS
 
@@ -89,7 +88,7 @@ console.log("steps:", optK);
 console.log("debug:", optDebug);
 console.log("effect:", optEffect);
 console.log("property check:", optPropCheck);
-console.log("property aggregation:", optPropAgg);
+// console.log("property aggregation:", optPropAgg);
 console.log("test validation:", optTestValidation);
 
 
@@ -121,6 +120,7 @@ const vAccCar = `a_c`
 const vSwUp = `s_u`
 const vSwDown = `s_d`
 const vSwCar = `s_c`
+const vHandle = `h`
 
 // const vFloorPrev = `f_prev`
 const vFloorSD = `f_sw_d`
@@ -263,10 +263,10 @@ const isMode = m => `${vMode} == ${m}`
 const mkState = (id, _stmt, _mods) => {
   const stmt = [...(_stmt ?? [])]
   const mods = [...(_mods ?? [])]
-  if (optPropCheck || optTestValidation === tvCount) {
-    stmt.push(`sc += 1`)
-    stmt.push(`sc_${id} += 1`)
-  }
+  // if (optPropCheck) {
+  //   stmt.push(`sc += 1`)
+  //   stmt.push(`sc_${id} += 1`)
+  // }
   return `${stmt.length ? "normal " : ""}${mods.length ? mods.join(" ") + " " : ""}state ${id} {${stmt.map(s => s.endsWith(";") ? s : s + ";").join(" ")}}`
 }
 
@@ -314,6 +314,9 @@ const floorHandleStates = rangeN
     if (optEffect && optPropCheck) {
       xs.push(`${vSwCar}_${i} = false`)
     }
+    if (optPropCheck) {
+      xs.push(`${vHandle}_${i} = true`)
+    }
     if (i !== fMax) {
       xs.push(`${vReqUp}_${i} = ${vReqUp}_${i} && !(${isMode(mUp)})`)
       if (optEffect && optPropCheck) {
@@ -355,12 +358,11 @@ const varDecl = [
   `int ${vFloor} where ${vFloor} >= 0 && ${vFloor} <= ${fMax};`
 ]
 
-if (optPropCheck || optTestValidation === tvCount) {
-  varDecl.push(`int sc = 0, ${states.map(s => `sc_${s} = 0`).join(", ")};`)
-  if (optPropCheck) {
-    varDecl.push(`int ${vFloorSU} = ${vFloor} where ${vFloorSU} >= 0 && ${vFloorSU} <= ${fMax};`)
-    varDecl.push(`int ${vFloorSD} = ${vFloor} where ${vFloorSD} >= 0 && ${vFloorSD} <= ${fMax};`)
-  }
+if (optPropCheck) {
+  // varDecl.push(`int sc = 0, ${states.map(s => `sc_${s} = 0`).join(", ")};`)
+  varDecl.push(`bool ${rangeN.map(i => `${vHandle}_${i} = false`).join(", ")};`)
+  varDecl.push(`int ${vFloorSU} = ${vFloor} where ${vFloorSU} >= 0 && ${vFloorSU} <= ${fMax};`)
+  varDecl.push(`int ${vFloorSD} = ${vFloor} where ${vFloorSD} >= 0 && ${vFloorSD} <= ${fMax};`)
 }
 
 const stateDecl = [
@@ -566,36 +568,8 @@ const mkInvariantProp = (expr, st) => {
   return `invariant I${id} {${expr};}${st ? ` in (${st.join(", ")})` : ""}`
 }
 
-const mkAssertProp = expr => optPropAgg
-  ? `invariant I${inv ++} {(sc == ${kFin + 1}) => (${expr});} // agg`
-  : `assert !(${expr});`
-
-const exprPropHalt = `${isMode(mIdle)} 
-  && sc_${stSwitchIdle} + sc_${stSwitchUp} + sc_${stSwitchDown} <= 4
-  && ${rangeN.map(i => `sc_${stFloorHandle}${i}`).join(" + ")} <= ${2 * optN}
-  && sc_${stFloorIncr} + sc_${stFloorDecr} <= ${2 * optN - 3}`
-
-const propHalt = mkAssertProp(exprPropHalt)
-
-const exprPropHaltSimple = `${isMode(mIdle)}`
-const propHaltSimple = `assert !(${exprPropHaltSimple});`
-
-const exprPropIdle1 = `sc_${stSwitchIdle} <= 1 && (sc_${stSwitchIdle} == 1) => (${isMode(mIdle)} && ${setBlast([vReqCar, vReqUp, vReqDown]).map(it => `!${it}`).join(" && ")})`
-const propIdle1 = mkInvariantProp(exprPropIdle1)
-
-const exprExistsInitReq = setBlast([vReqCar, vReqUp, vReqDown]).map(it => `initial(${it})`).join(" || ")
-
-const exprPropIdle2 = `(sc_${stSwitchUp} + sc_${stSwitchDown} != 0) => (sc_${stSwitchIdle} == 1)`
-
-const propIdle2 = mkAssertProp(exprPropIdle2)
-
-const exprPropIdle3 = `(initial(${vMode}) == ${mIdle} && sc == 2 && (${exprExistsInitReq})) => (${isMode(mUp)} && sc_${stSwitchUp} == 1 || ${isMode(mDown)} && sc_${stSwitchDown} == 1)`
-
-const propIdle3 = mkInvariantProp(exprPropIdle3)
-
-// `initial(${it}) == (sc_${stFloorHandle}${xs[xs.length - 1]} != 0)`
 const exprPropLH1 = rangeN.map(i => [
-  `(${setSelect([vReqUp, vReqDown, vReqCar], i).map(v => optEffect ? pfReplace(v, pfAcc) : `initial(${v})`).join(" || ")}) == (sc_${stFloorHandle}${i} != 0)`,
+  `(${setSelect([vReqUp, vReqDown, vReqCar], i).map(v => optEffect ? pfReplace(v, pfAcc) : `initial(${v})`).join(" || ")}) == ${vHandle}_${i}`,
   ...setSelect([vReqUp, vReqDown, vReqCar], i).map(v => `!${v}`)
 ].join(" && ")).join(" && ")
 
@@ -682,12 +656,6 @@ const exprPropMS4D = `${isMode(mDown)} && ` + expand1(f => {
   const ys = []
 
   for (let i = 0; i <= f; i ++) {
-    // const c1 = `((${i} < ${vFloor}) => (${setSelect([vReqDown, vReqUp, vReqCar], i).join(" || ")}))`
-    // const c2a = setSelect([vReqUp], i)[0]
-    // const c2b = setSelect([vReqDown, vReqCar], i).map(it => `!${it}`).join(" && ")
-    // const c2 = `((${i} == ${vFloor}) => (${[c2a, c2b].filter(it => it).join(" && ")}))`
-    // ys.push(`(${[c1, c2].join(" && ")})`)
-    // ys.push(c1)
     ys.push(setSelect([vReqDown, vReqUp, vReqCar], i).join(" || "))
   }
 
@@ -712,108 +680,29 @@ const exprPropMS4U = `${isMode(mUp)} && ` + expand1(f => {
 
 const propMS4U = mkInvariantProp(exprPropMS4U, [stFloorIncr, stSwitchUp])
 
-
-// const negCurrentInitial = expandCurrentInitial((f, initF) => {
-//   if (initF - f > 0) {
-//     const xs = []
-//     for (let i = f+1; i <= initF; i++) {
-//       xs.push(`!${vReqCar}_${i}`)
-//       xs.push(...setSelect([vReqDown], i).map(it => `!${it}`))
-//     }
-//     if (xs.length) {
-//       return xs.join(" && ")
-//     }
-//   }
-
-//   return null
-// }).join(" && ")
-
-// const negCurrentAbove = expandCurrent(f => {
-//   const xs = []
-//   for (let i = f + 1; i < optN; i++) {
-//     xs.push(`!${vReqCar}_${i}`)
-//     xs.push(...setSelect([vReqDown, vReqUp], i).map(it => `!${it}`))
-//   }
-
-//   if (xs.length) {
-//     return xs.join(" && ")
-//   }
-// }).join(" && ")
-
-// const exprPropMS2D = `(${isMode(mDown)}) => ((sc_${stSwitchUp} == 0 && ${negCurrentInitial}) || (sc_${stSwitchUp} != 0 && ${negCurrentAbove}))`
-
-// const propMS2D = mkInvariantProp(exprPropMS2D)
-
-// const exprPropMS3D = `(sc_${stSwitchDown} == 1 && sc_${stSwitchUp} == 1) => (${expandCurrent(i => setSelect([vReqCar, vReqUp], i).map(it => `!${it}`).join(" && "), true).join(" && ")})`
-
-// const propMS3D = mkInvariantProp(exprPropMS3D, [stSwitchDown])
-
-// const exprPropMS4D = `(sc_${stSwitchDown} == 2) => (sc_${stSwitchUp} == 1 && ${rangeN.map(i => {
-//   const xs = setSelect([vReqUp, vReqCar], i).map(it => `!${it}`)
-//   const d = setSelect([vReqDown], i)[0]
-//   if (d) {
-//     xs.push(`!(${i} <= initial(${vFloor}) && ${d})`)
-//   }
-
-//   return xs.join(" && ")
-// }).join(" && ")})`
-
-// const propMS4D = mkInvariantProp(exprPropMS4D, [stSwitchDown])
-
-// const invDecl = [
-//   "// halt",
-//   propHalt,
-//   "\n",
-//   "// idling",
-//   propIdle1,
-//   propIdle2,
-//   propIdle3,
-//   "\n",
-//   "// level-handling",
-//   propLH1,
-//   propLH2,
-//   "\n",
-//   "// mode-switching",
-//   propMS1D,
-//   propMS2,
-//   propMS3,
-//   propMS4,
-//   "\n"
-// ]
-
 const invDecl = []
 
-if (!optEffect) {
-  if (initPropHalt == null || initPropHalt.includes(0)) {
-    invDecl.push(propHalt)
-  }
+// if (!optEffect) {
+//   if (initPropHalt == null || initPropHalt.includes(0)) {
+//     invDecl.push(propHalt)
+//   }
 
-  if (initPropHalt == null || initPropHalt.includes(1)) {
-    goalStmt.push(propHaltSimple)
-  }
+//   if (initPropHalt == null || initPropHalt.includes(1)) {
+//     goalStmt.push(propHaltSimple)
+//   }
 
-  if (initPropIdle == null || initPropIdle.includes(0)) {
-    invDecl.push(propIdle1)
-  }
+//   if (initPropIdle == null || initPropIdle.includes(0)) {
+//     invDecl.push(propIdle1)
+//   }
 
-  if (initPropIdle == null || initPropIdle.includes(1)) {
-    invDecl.push(propIdle2)
-  }
+//   if (initPropIdle == null || initPropIdle.includes(1)) {
+//     invDecl.push(propIdle2)
+//   }
+// }
 
-
-  // invDecl.push(
-  //   "// halt",
-  //   propHalt,
-  //   "\n",
-  //   "// idling",
-  //   propIdle1,
-  //   propIdle2,
-  // )
-}
-
-if (initPropIdle == null || initPropIdle.includes(2)) {
-  invDecl.push(propIdle3)
-}
+// if (initPropIdle == null || initPropIdle.includes(2)) {
+//   invDecl.push(propIdle3)
+// }
 
 if (initPropLH == null || initPropLH.includes(0)) {
   invDecl.push(propLH1)
@@ -841,26 +730,9 @@ if (initPropMS == null || initPropMS.includes(3)) {
   invDecl.push(propMS4U, propMS4D)
 }
 
-// invDecl.push(
-//   propIdle3,
-//   "\n",
-//   "// level-handling",
-//   propLH1,
-//   propLH2,
-//   "\n",
-//   "// mode-switching",
-//   propMS1U,
-//   propMS1D,
-//   propMS2,
-//   propMS3,
-//   propMS4U,
-//   propMS4D,
-//   "\n"
-// )
-
-if (optPropCheck && !optPropAgg) {
-  console.log(invDecl.join("\n"));
-}
+// if (optPropCheck) {
+//   console.log(invDecl.join("\n"));
+// }
 
 const v = x => x ? 1 : 0
 
@@ -869,23 +741,23 @@ const floorCount = rangeN.map(i => v(initReqDown.includes(i)) + v(initReqUp.incl
 let condStmt = ""
 
 switch (optTestValidation) {
-  case tvCount: {
-    const disj = floorCount.map((cnt, i) => {
-      if (cnt !== 0) {
-        return `!(sc_${stFloorHandle}${i} >= ${cnt})`
-      } else {
-        return null
-      }
-    }).filter(it => it)
+  // case tvCount: {
+  //   const disj = floorCount.map((cnt, i) => {
+  //     if (cnt !== 0) {
+  //       return `!(sc_${stFloorHandle}${i} >= ${cnt})`
+  //     } else {
+  //       return null
+  //     }
+  //   }).filter(it => it)
 
-    if (disj.length) {
-      goalStmt.push(`assert ${disj.join(" || ")};`)
-    } else {
-      console.log("invalid validation: empty conditions");
-      process.exit()
-    }
-    break
-  }
+  //   if (disj.length) {
+  //     goalStmt.push(`assert ${disj.join(" || ")};`)
+  //   } else {
+  //     console.log("invalid validation: empty conditions");
+  //     process.exit()
+  //   }
+  //   break
+  // }
   case tvPath: {
     const disj = floorCount.map((cnt, i) => {
       if (cnt !== 0) {
@@ -913,7 +785,7 @@ ${stateDecl.join("\n")}
 
 ${edgeDecl.join("\n")}
 
-${optPropCheck && optPropAgg ? invDecl.join("\n") : ""}
+${optPropCheck ? invDecl.join("\n") : ""}
 goal {
 ${goalStmt.join("\n")}
 ${checkStmt}

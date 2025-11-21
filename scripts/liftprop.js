@@ -113,10 +113,11 @@ for (let prop of props) {
 }
 
 for (let [base, sep, conf] of bc) {
-  const bits = Math.max(
-    conf.optK ? (Math.ceil(Math.log2(conf.optK)) + 1) : (Math.ceil(Math.log2(8 * conf.optN + 2 + 1)) + 1),
-    Math.ceil(Math.log2(conf.optN)) + 1
-  )
+  // const bits = Math.max(
+  //   conf.optK ? (Math.ceil(Math.log2(conf.optK)) + 1) : (Math.ceil(Math.log2(8 * conf.optN + 2 + 1)) + 1),
+  //   Math.ceil(Math.log2(conf.optN)) + 1
+  // )
+  const bits = Math.ceil(Math.log2(conf.optN)) + 1
   const base_bv = `${base}.bv.smt2`
   const base_lia = `${base}.lia.smt2`
   const base_lia_cyclone = `${base}_gen.smt2`

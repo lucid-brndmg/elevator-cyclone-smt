@@ -8,7 +8,7 @@ const {
   compile_cyclone_native,
 } = require("./manifest")
 
-const outdir = path.resolve("../../tmp_exec")
+const outdir = path.resolve("../../prop_fin")
 
 const codegen = true
 
@@ -17,10 +17,10 @@ const sh_lia = {}
 const sh_bv = {}
 const sh_gen_cyclone = {id: "cyclone_smt2", lines: []}
 
-const gen_static = false
+const gen_static = true
 const gen_dynamic = true
 
-const gen_lia = false
+const gen_lia = true
 const gen_bv = true
 
 const ns = [3, 5, 10, 15]
@@ -78,7 +78,6 @@ for (let prop of props) {
       const base = `${base_stc}.cyclone`
       const conf_stc = {
         optPropCheck: true,
-        optPropAgg: true,
         optEffect: false,
         optDebug: false,
         optOut: path.join(outdir, base),
@@ -95,7 +94,6 @@ for (let prop of props) {
         const base = `${base_dyn}_${k}.cyclone`
         const conf_dyn = {
           optPropCheck: true,
-          optPropAgg: true,
           optDebug: false,
           optN: n,
           optOut: path.join(outdir, base),

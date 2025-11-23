@@ -32,7 +32,11 @@ const configs = [
   [30, range(10, 30), range(9, 29), range(10, 30), 9, U],
   [30, [], [28], [25], 26, I],
   [30, [10, 20, 25], [], [11], 22, D],
-  [50, range(20, 41), range(19, 40), range(20, 41), 35, D]
+  [35, range(0, 30), range(8, 16), [], 0, U],
+  [40, [20, 23, 1, 8, 15], range(0, 5).concat(range(20, 30)), [8, 20, 32], 36, D],
+  [45, [44], range(15, 25), range(20, 40), 42, U],
+  [50, range(20, 41), range(19, 40), range(20, 41), 35, D],
+  [50, [49], [], range(10, 15), 3, U]
 ]
 
 console.log(configs.length, "configurations");

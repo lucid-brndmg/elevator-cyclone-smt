@@ -10,7 +10,7 @@ const {
 
 const outdir = path.resolve("../../prop_fin")
 
-const codegen = true
+const codegen = false
 
 // const sh_cyclone = {}
 const sh_lia = {}

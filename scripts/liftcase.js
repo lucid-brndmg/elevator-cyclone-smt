@@ -15,29 +15,76 @@ const U = "U"
 const D = "D"
 const I = "I"
 
-const outdir = path.join("../../cases_rand")
+const outdir = path.join("../../cases")
 
 const range = (lo, hi) => new Array(hi - lo).fill().map((_, i) => i + lo)
 
-// const configs = [
-//   // n, c, u, d, f, m
-//   [20, [10, 15, 18], [18], [], 12, U],
-//   [20, [5], [18], [], 19, D],
-//   [30, range(10, 30), range(9, 29), range(10, 30), 9, U],
-//   [30, [], [28], [25], 26, I],
-//   [30, [10, 20, 25], [], [11], 22, D],
-//   [35, range(0, 30), range(8, 16), [], 0, U],
-//   [40, [20, 23, 1, 8, 15], range(0, 5).concat(range(20, 30)), [8, 20, 32], 36, D],
-//   [45, [44], range(15, 25), range(20, 40), 42, U],
-//   [50, range(20, 41), range(19, 40), range(20, 41), 35, D],
-//   [50, [49], [], range(10, 15), 3, U]
-// ]
-const configs = JSON.parse(fs.readFileSync("../../rand_cases.json", "utf8"))
+const path_gen_det = (conf) => {
+  const [n, c, u, d, init_f, init_mode] = conf
+  if (init_mode === I) {
+    const p1 = path_gen_det([n, c, u, d, init_f, U])
+    const p2 = path_gen_det([n, c, u, d, init_f, D])
+
+    return Math.max(p1, p2)
+  }
+
+  let p = []
+  let m = init_mode
+  const sc = new Set(c)
+  const su = new Set(u)
+  const sd = new Set(d)
+  let f = init_f
+
+  while (m !== I || su.size || sc.size || sd.size) {
+    const all = [...su, ...sd, ...sc]
+    if (m === U && su.has(f) || m === D && sd.has(f) || sc.has(f)) {
+      p.push(`L${f}`)
+      if (m === U) su.delete(f)
+      if (m === D) sd.delete(f)
+      sc.delete(f)
+    } else if (m === U && !sc.has(f) && !su.has(f) && all.some(x => x > f)) {
+      f += 1
+      p.push("MoveUp")
+    } else if (m === D && !sc.has(f) && !sd.has(f) && all.some(x => x < f)) {
+      f -= 1
+      p.push("MoveDown")
+    } else if (m !== U && ((m === I && sc.has(f)) || su.has(f) || all.some(j => j > f)) && (m === D && !sc.has(f) && !sd.has(f) && !all.some(x => x < f) || m !== D)) {
+      m = U
+      p.push(`SetMotionUp`)
+    } else if (m !== D && ((m === I && sc.has(f)) || sd.has(f) || all.some(j => j < f)) && (m === U && !sc.has(f) && !su.has(f) && !all.some(x => x > f) || m !== U)) {
+      m = D
+      p.push("SetMotionDown")
+    } else if (m !== I && all.length === 0) {
+      m = I
+      p.push("SetIdle")
+    } else {
+      console.log("WARN: unexpected state", sc, su, sd, f, m);
+    }
+  }
+
+  console.log(p.map(s => `D->${s}`).join("->") + "->D");
+  return p.length * 2 + 1
+}
+
+const configs = [
+  // n, c, u, d, f, m
+  [20, [10, 15, 18], [18], [], 12, U],
+  [20, [5], [18], [], 19, D],
+  [30, range(10, 30), range(9, 29), range(10, 30), 9, U],
+  [30, [], [28], [25], 26, I],
+  [30, [10, 20, 25], [], [11], 22, D],
+  [35, range(0, 30), range(8, 16), [], 0, U],
+  [40, [20, 23, 1, 8, 15], range(0, 5).concat(range(20, 30)), [8, 20, 32], 36, D],
+  [45, [44], range(15, 25), range(20, 40), 42, U],
+  [50, range(20, 41), range(19, 40), range(20, 41), 35, D],
+  [50, [49], [], range(10, 15), 3, U]
+]
+// const configs = JSON.parse(fs.readFileSync("../../rand_cases.json", "utf8"))
 
 console.log(configs.length, "configurations");
 
 const codegen = false
-const pfx = "r"
+const pfx = "s"
 
 const invalid = configs.find(xs => xs.length !== 6)
 if (invalid) {
@@ -50,12 +97,14 @@ for (let i = 0; i < configs.length; i++) {
   const base_a = `${pfx}${i+1}_a.cyclone`
   const base_b = `${pfx}${i+1}_b.cyclone`
   const [n, lc, lu, ld, f, m] = configs[i]
+  const k = path_gen_det(configs[i])
+  console.log(`s${i + 1}: `, k)
 
   const def = {
     optPropCheck: false,
     optDebug: false,
     optN: n,
-    optK: 8 * n + 2,
+    optK: k, // 8 * n + 2,
     initFloor: f,
     initMode: m,
     initReqCar: lc,

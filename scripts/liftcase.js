@@ -15,31 +15,29 @@ const U = "U"
 const D = "D"
 const I = "I"
 
-const outdir = path.join("../tmp_scene")
+const outdir = path.join("../../cases_rand")
 
 const range = (lo, hi) => new Array(hi - lo).fill().map((_, i) => i + lo)
 
-const configs = [
-  // n, c, u, d, f, m
-  // [4, [2], [], [2], 2, I],
-  // [4, [], [0], [3], 2, D],
-  // [10, [8], [0, 3, 7], [], 5, U],
-  // [10, [], [8], [5], 6, D],
-  // [15, [], [5], [2], 4, U],
-  // [15, [8], [], [], 10, U],
-  [20, [10, 15, 18], [18], [], 12, U],
-  [20, [5], [18], [], 19, D],
-  [30, range(10, 30), range(9, 29), range(10, 30), 9, U],
-  [30, [], [28], [25], 26, I],
-  [30, [10, 20, 25], [], [11], 22, D],
-  [35, range(0, 30), range(8, 16), [], 0, U],
-  [40, [20, 23, 1, 8, 15], range(0, 5).concat(range(20, 30)), [8, 20, 32], 36, D],
-  [45, [44], range(15, 25), range(20, 40), 42, U],
-  [50, range(20, 41), range(19, 40), range(20, 41), 35, D],
-  [50, [49], [], range(10, 15), 3, U]
-]
+// const configs = [
+//   // n, c, u, d, f, m
+//   [20, [10, 15, 18], [18], [], 12, U],
+//   [20, [5], [18], [], 19, D],
+//   [30, range(10, 30), range(9, 29), range(10, 30), 9, U],
+//   [30, [], [28], [25], 26, I],
+//   [30, [10, 20, 25], [], [11], 22, D],
+//   [35, range(0, 30), range(8, 16), [], 0, U],
+//   [40, [20, 23, 1, 8, 15], range(0, 5).concat(range(20, 30)), [8, 20, 32], 36, D],
+//   [45, [44], range(15, 25), range(20, 40), 42, U],
+//   [50, range(20, 41), range(19, 40), range(20, 41), 35, D],
+//   [50, [49], [], range(10, 15), 3, U]
+// ]
+const configs = JSON.parse(fs.readFileSync("../../rand_cases.json", "utf8"))
 
 console.log(configs.length, "configurations");
+
+const codegen = false
+const pfx = "r"
 
 const invalid = configs.find(xs => xs.length !== 6)
 if (invalid) {
@@ -49,8 +47,8 @@ if (invalid) {
 
 const bc = []
 for (let i = 0; i < configs.length; i++) {
-  const base_a = `s${i+1}_a.cyclone`
-  const base_b = `s${i+1}_b.cyclone`
+  const base_a = `${pfx}${i+1}_a.cyclone`
+  const base_b = `${pfx}${i+1}_b.cyclone`
   const [n, lc, lu, ld, f, m] = configs[i]
 
   const def = {
@@ -94,11 +92,16 @@ for (let [base, conf] of bc) {
 
   sh_gen_cyclone.lines.push(`cyclone-gen ${base}`)
 
-  const h_cmp_lia = compile_cyclone_native(conf.optOut, path.join(outdir, base_lia))
-  console.log("gen lia", h_cmp_lia);
+  const h_gen = gen_cyclone(conf)
+  console.log(h_gen)
 
-  const h_cmp_bv = compile_cyclone_native(conf.optOut, path.join(outdir, base_bv), bits)
-  console.log("gen bv", h_cmp_bv);
+  if (codegen) {
+    const h_cmp_lia = compile_cyclone_native(conf.optOut, path.join(outdir, base_lia))
+    console.log("gen lia", h_cmp_lia);
+
+    const h_cmp_bv = compile_cyclone_native(conf.optOut, path.join(outdir, base_bv), bits)
+    console.log("gen bv", h_cmp_bv);
+  }
 
   sh_lia_solvers.forEach(({lines}, i) => lines.push(
     lia_solvers[i].h(base_lia),
@@ -107,7 +110,7 @@ for (let [base, conf] of bc) {
     `echo "done ${base_lia_cyclone}"`
   ))
 
-  sh_lia_solvers.forEach(({lines}, i) => lines.push(
+  sh_bv_solvers.forEach(({lines}, i) => lines.push(
     bv_solvers[i].h(base_bv),
     `echo "done ${base_bv}"`,
   ))

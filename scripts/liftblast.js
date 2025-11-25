@@ -69,10 +69,10 @@ if (optN < 3) {
   process.exit(0)
 }
 
-if (!optDebug && !optEffect && (optK % 2 !== 0)) {
-  console.log("invalid k: expected (k mod 2 == 0) for non-effect");
-  process.exit(0)
-}
+// if (!optDebug && !optEffect && (optK % 2 !== 0)) {
+//   console.log("invalid k: expected (k mod 2 == 0) for non-effect");
+//   process.exit(0)
+// }
 
 const isTestValidation = optTestValidation !== tvOff
 

@@ -3,6 +3,7 @@ const path = require("node:path");
 const liftgen = "liftblast.js"
 
 const cyclone_native = "D:\\mu\\cyclone-tutorial\\analyzer-native\\cyclone-rs\\target\\debug\\cyclone-native.exe"
+const cyclone_native_stack = 512 * 1024 * 1024
 
 const to_sec = 2 * 60 * 60
 
@@ -31,7 +32,7 @@ const exec_opts = {
 const gen_cyclone = (conf) => spawnSync("node", [liftgen, JSON.stringify(conf)], exec_opts)
 
 const compile_cyclone_native = (file_in, file_out, bv = 0) => {
-  const args = [file_in, "--codegen", file_out]
+  const args = [file_in, "--codegen", file_out, "--stack-size", cyclone_native_stack]
   if (bv) {
     args.push("--option-bv-int", "--option-bv-int-size", bv)
   }

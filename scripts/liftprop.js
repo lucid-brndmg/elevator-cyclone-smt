@@ -8,9 +8,9 @@ const {
   compile_cyclone_native,
 } = require("./manifest")
 
-const outdir = path.resolve("../../prop_fin")
+const outdir = path.resolve("../../prop_next")
 
-const codegen = false
+const codegen = true
 
 // const sh_cyclone = {}
 const sh_lia = {}
@@ -23,19 +23,14 @@ const gen_dynamic = true
 const gen_lia = true
 const gen_bv = true
 
-const ns = [3, 5, 10, 15]
+const ns = [10, 20, 50, 100]
 const ks = [4, 8, 16, 32]
 
-const props = [
-  // {initPropLH: [0]},
-  // {initPropLH: [1]},
-  {initPropLH: [0, 1]},
+const k_force = 1
 
-  // {initPropMS: [0]},
-  // {initPropMS: [1]},
-  // {initPropMS: [2]},
-  // {initPropMS: [3]},
-  {initPropMS: [0, 1, 2, 3]},
+const props = [
+  // {initPropLH: [0, 1]},
+  // {initPropMS: [0, 1, 2, 3]},
 
   {initPropLH: [0, 1], initPropMS: [0, 1, 2, 3]},
 ]
@@ -82,6 +77,7 @@ for (let prop of props) {
         optDebug: false,
         optOut: path.join(outdir, base),
         optN: n,
+        optK: k_force || undefined,
         ...def
       }
       bc.push([base, n, conf_stc])
@@ -90,7 +86,7 @@ for (let prop of props) {
 
 
     if (gen_dynamic && sfx.includes("l") && sfx.includes("m")) {
-      for (let k of ks) {
+      for (let k of k_force ? [k_force] : ks) {
         const base = `${base_dyn}_${k}.cyclone`
         const conf_dyn = {
           optPropCheck: true,

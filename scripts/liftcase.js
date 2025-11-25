@@ -78,7 +78,8 @@ const configs = [
   [40, [30, 33, 27, 28, 21], range(25, 30), [28, 35, 32], 24, D],
   [45, [44], range(35, 40), range(34, 40), 42, U],
   [50, range(33, 41), range(37, 40), range(36, 41), 35, D],
-  [50, [49], [], range(40, 45), 30, U]
+  // [50, [49], [], range(40, 45), 30, U],
+  [50, [49], [], range(38, 45), 42, U]
 ]
 // const configs = JSON.parse(fs.readFileSync("../../rand_cases.json", "utf8"))
 

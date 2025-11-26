@@ -97,7 +97,7 @@ if (invalid) {
 const bc = []
 for (let i = 0; i < configs.length; i++) {
   const base_a = `${pfx}${i+1}_a.cyclone`
-  const base_b = `${pfx}${i+1}_b.cyclone`
+  // const base_b = `${pfx}${i+1}_b.cyclone`
   const [n, lc, lu, ld, f, m] = configs[i]
   const k = path_gen_det(configs[i])
   console.log(`s${i + 1}: `, k)
@@ -120,14 +120,14 @@ for (let i = 0; i < configs.length; i++) {
     ...def,
   }
 
-  const def_b = {
-    optOut: path.join(outdir, base_b),
-    optEffect: true,
-    optTestValidation: "path",
-    ...def
-  }
+  // const def_b = {
+  //   optOut: path.join(outdir, base_b),
+  //   optEffect: true,
+  //   optTestValidation: "path",
+  //   ...def
+  // }
 
-  bc.push([base_a, def_a], [base_b, def_b])
+  bc.push([base_a, def_a])
 }
 
 // const sh_cyclone = []

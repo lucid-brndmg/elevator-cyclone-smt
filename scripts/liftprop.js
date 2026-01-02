@@ -5,7 +5,7 @@ const {
   lia_solvers,
   bv_solvers,
   gen_cyclone,
-  compile_cyclone_native,
+  compile_cyclone_rs,
 } = require("./manifest")
 
 // output directory of generated specifications
@@ -123,12 +123,12 @@ for (let [base, sep, conf] of bc) {
 
     if (gen_lia) {
       // conf.optOut path.join(outdir, base_lia)
-      const h_cmp_lia = compile_cyclone_native(conf.optOut, path.join(outdir, base_lia))
+      const h_cmp_lia = compile_cyclone_rs(conf.optOut, path.join(outdir, base_lia))
       console.log("gen lia", h_cmp_lia);
     }
 
     if (gen_bv) {
-      const h_cmp_bv = compile_cyclone_native(conf.optOut, path.join(outdir, base_bv), bits)
+      const h_cmp_bv = compile_cyclone_rs(conf.optOut, path.join(outdir, base_bv), bits)
       console.log("gen bv", h_cmp_bv);
     }
   }

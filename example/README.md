@@ -65,14 +65,14 @@ Time Spent:442 msc
 Notice that time here also includes formulae compilation time. One can investigate the trace in corresponding location. 
 
 #### Cyclone (Rust)
-Optionally, one can try out Cyclone (Rust version) as an alternative. It uses different encoding than Java version. First extract `/cyclone-versions/cyclone-rs.zip` to get `cyclone-native` Linux binary. Then:
+Optionally, one can try out Cyclone (Rust version) as an alternative. It uses different encoding than Java version. First extract `/cyclone-versions/cyclone-rs.zip` to get `cyclone-rs` Linux binary. Then:
 ```shell
-/path/to/cyclone-native l3_stc.cyclone
+/path/to/cyclone-rs l3_stc.cyclone
 ```
 
 Which outputs:
 ```
-Cyclone Native : Alternative Cyclone Implementation
+Cyclone (Rust) : Alternative Unofficial Cyclone Implementation
 Repository: https://github.com/lucid-brndmg/cyclone-rs
 Use -h to see options
 

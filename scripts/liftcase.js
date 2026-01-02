@@ -3,12 +3,12 @@ const path = require("node:path")
 const fs = require("fs")
 
 const {
-  cyclone_native,
+  cyclone_rs,
   lia_solvers,
   bv_solvers,
   cyclone,
   liftgen,
-  exec_opts, gen_cyclone, compile_cyclone_native
+  exec_opts, gen_cyclone, compile_cyclone_rs
 } = require("./manifest")
 
 const U = "U"
@@ -147,10 +147,10 @@ for (let [base, conf] of bc) {
   console.log(h_gen)
 
   if (codegen) {
-    const h_cmp_lia = compile_cyclone_native(conf.optOut, path.join(outdir, base_lia))
+    const h_cmp_lia = compile_cyclone_rs(conf.optOut, path.join(outdir, base_lia))
     console.log("gen lia", h_cmp_lia);
 
-    const h_cmp_bv = compile_cyclone_native(conf.optOut, path.join(outdir, base_bv), bits)
+    const h_cmp_bv = compile_cyclone_rs(conf.optOut, path.join(outdir, base_bv), bits)
     console.log("gen bv", h_cmp_bv);
   }
 

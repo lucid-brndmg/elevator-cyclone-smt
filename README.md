@@ -157,10 +157,10 @@ Option `option-generation` is NOT supported in the Rust version. Instead, it use
 
 ```shell
 # optionally use --stack-size <bits> to adjust stack size for large input
-/path/to/cyclone-native l3_stc.cyclone --codegen l3_stc.smt2
+/path/to/cyclone-rs l3_stc.cyclone --codegen l3_stc.smt2
 ```
 
-Then `l3_stc.smt2` can be checked by Z3 or other solvers. The output SMT2 file is in integer encoding. Notice it is memory-consuming for generating 50-floors. If `cyclone-native` exit unexpectedly, set `--stack-size 536870912` to increase stack size. 
+Then `l3_stc.smt2` can be checked by Z3 or other solvers. The output SMT2 file is in integer encoding. Notice it is memory-consuming for generating 50-floors. If `cyclone-rs` exit unexpectedly, set `--stack-size 536870912` to increase stack size. 
 
 #### Using Cyclone (Rust) with Bit-Vector Encoding
 
@@ -168,7 +168,7 @@ Additionally, the Rust version supports automatic conversion for `int` to signed
 
 ```shell
 # optionally use --stack-size <bits> to adjust stack size for large input
-/path/to/cyclone-native l3_stc.cyclone --codegen l3_stc.bv.smt2 --option-bv-int --option-bv-int-size 3
+/path/to/cyclone-rs l3_stc.cyclone --codegen l3_stc.bv.smt2 --option-bv-int --option-bv-int-size 3
 ```
 
 The resultant `l3_stc.bv.smt2` file then can be solved by BV solvers, such as STP and Bitwuzla. 

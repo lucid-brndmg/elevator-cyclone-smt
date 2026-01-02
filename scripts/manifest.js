@@ -1,10 +1,10 @@
 const {spawnSync} = require("node:child_process");
 const liftgen = "liftblast.js"
 
-// the path to cyclone-native executable
-const cyclone_native = "cyclone-native"
+// the path to cyclone-rs executable
+const cyclone_rs = "cyclone-rs"
 // the stack size (bits)
-const cyclone_native_stack = 512 * 1024 * 1024
+const cyclone_rs_stack = 512 * 1024 * 1024
 
 // the timeout
 const to_sec = 2 * 60 * 60
@@ -33,13 +33,13 @@ const exec_opts = {
 
 const gen_cyclone = (conf) => spawnSync("node", [liftgen, JSON.stringify(conf)], exec_opts)
 
-const compile_cyclone_native = (file_in, file_out, bv = 0) => {
-  const args = [file_in, "--codegen", file_out, "--stack-size", cyclone_native_stack]
+const compile_cyclone_rs = (file_in, file_out, bv = 0) => {
+  const args = [file_in, "--codegen", file_out, "--stack-size", cyclone_rs_stack]
   if (bv) {
     args.push("--option-bv-int", "--option-bv-int-size", bv)
   }
 
-  return spawnSync(cyclone_native, args, exec_opts)
+  return spawnSync(cyclone_rs, args, exec_opts)
 }
 
 // const compile_cyclone = (file_in, out_dir) => {
@@ -219,14 +219,14 @@ const parse_osmt = (lines, hf = handle_fin) => {
 }
 
 module.exports = {
-  cyclone_native,
+  cyclone_rs,
   to_sec,
   lia_solvers,
   bv_solvers,
   cyclone,
   liftgen,
   exec_opts,
-  compile_cyclone_native,
+  compile_cyclone_rs,
   // compile_cyclone,
   gen_cyclone,
   parse_bwz,

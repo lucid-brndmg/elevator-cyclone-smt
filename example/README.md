@@ -62,7 +62,7 @@ Trace Generated:/path/to/elevator-cyclone-smt/example/trace/l3_stc.trace
 Time Spent:442 msc
 ```
 
-Notice that time here also includes formulae compilation time. One can investigate the trace in corresponding location. 
+Notice that time here also includes compilation time. One can investigate the trace in corresponding location. 
 
 #### Cyclone (Rust)
 Optionally, one can try out Cyclone (Rust version) as an alternative. It uses different encoding than Java version. First extract `/cyclone-versions/cyclone-rs.zip` to get `cyclone-rs` Linux binary. Then:
@@ -87,9 +87,6 @@ Path 0 (length 26): D->SetMotionDown->D->MoveDown->D->SetMotionUp->D->L0->D->Set
 === TRACE ===
 
 ... TOML format trace output ...
-
-Total checked 2 formulae: 1 unsat, 0 unknown, 1 sat, took 112ms
-Total took 130ms
 ```
 
 ## Selecting Path Length

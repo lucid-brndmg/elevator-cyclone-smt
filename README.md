@@ -11,15 +11,15 @@ The following instructions are for reproducing the results from Table 3-6 in the
 ### Pre-requirement
 - A POSIX-based operating system (Linux, MacOS or [Windows-WSL](https://learn.microsoft.com/en-us/windows/wsl/install)). 
 - Series of SMT-LIB solver installed and configured in `PATH`, including: [Z3](https://github.com/Z3Prover/z3), [CVC5](https://cvc5.github.io/), [Yices2](https://yices.csl.sri.com/), [OpenSMT](https://github.com/usi-verification-and-security/opensmt), [MathSAT5](https://mathsat.fbk.eu/), [STP](https://stp.github.io/) and [Bitwuzla](https://bitwuzla.github.io/). Full list of solver identifier and corresponding output please see table below. 
-- At least **16GB of memory** is required for solving large formulae, and 24GB is required for generating `.smt2` from `.cyclone` specifications. 
-- At least **16GB of disk space** is required for uncompressing the SMT2 formulae. 
+- At least **16GB of memory** is required for solving large formulas, and 24GB is required for generating `.smt2` from `.cyclone` specifications. 
+- At least **16GB of disk space** is required for uncompressing the SMT2 formulas. 
 - (Optional) Installation of [Cyclone (Java)](https://classicwuhao.github.io/cyclone_tutorial/installation.html) for running specific `.cyclone` files.
 - (Optional) Installation of Cyclone (Rust): A Linux binary can be found at `/cyclone-versions/cyclone-rs.zip`. Unzip the file to get an executable. 
 - (Optional) Installation of [Node.js](https://nodejs.org/en) for generating Cyclone specifications. 
 
 ### SMT-LIB Solver Configurations
 
-Both `/prop` and `/scene` directories contains a `formulae.zip` file containing SMT2 formulae and Cyclone specifications, and series of Bash scripts starting with `exec_[solver]` for reproducing solving process. When executing each script, there will be output file starting with `out_[solver]` suffix. 
+Both `/prop` and `/scene` directories contains a `formulas.zip` file containing SMT2 formulas and Cyclone specifications, and series of Bash scripts starting with `exec_[solver]` for reproducing solving process. When executing each script, there will be output file starting with `out_[solver]` suffix. 
 
 The list of SMT-LIB solvers (version corresponds to paper), corresponding script identifier and output are recorded at following table. **File of 'Executable' should be inside `PATH` before execution of `.sh` script.** Column 'Time keyword' is the keyword to locate line of time consumption in output file. 
 
@@ -38,30 +38,30 @@ The list of SMT-LIB solvers (version corresponds to paper), corresponding script
 #### Output Interpretation
 
 Contents of each output file are ordered by files of each script, separated in segments. Each segment consists 3 parts:
-- Is the input formulae satisfiable? (`sat, unsat` or timeout messages)
-- The smt-model of the formulae (only available if result is `sat`)
+- Is the input formulas satisfiable? (`sat, unsat` or timeout messages)
+- The smt-model of the formulas (only available if result is `sat`)
 - Before the end of segment: Solver statistics, including **time consumption of solving** (Specially, time is written to a separated file `out_osmt_time` of OpenSMT)
 - A line denotes the end of segment: `fin [file].smt2`
 
 ### Property Verification
 
-Files in `/prop` are specifications and formulae of Table 3 and 4. To reproduce solving SMT2 files, enter the folder, first unzip the SMT2 and Cyclone files (requires at least 4GB of disk space):
+Files in `/prop` are specifications and formulas of Table 3 and 4. To reproduce solving SMT2 files, enter the folder, first unzip the SMT2 and Cyclone files (requires at least 4GB of disk space):
 
 ```shell
-unzip formulae.zip
+unzip formulas.zip
 ```
 
-Make sure all `.smt2` files are **at same directory** of `.sh` scripts. Then use `bash exec_[solver]_[floors].sh` for solving the set of formulae using particular solver (see table below for details). For instance, using MathSAT5 to verify 3-floors (requires `mathsat` be configured in `PATH`):
+Make sure all `.smt2` files are **at same directory** of `.sh` scripts. Then use `bash exec_[solver]_[floors].sh` for solving the set of formulas using particular solver (see table below for details). For instance, using MathSAT5 to verify 3-floors (requires `mathsat` be configured in `PATH`):
 
 ```shell
 bash exec_ms_3.sh
 ```
 
-This generates `out_ms3.txt` as output. All results **should be `unsat`**. Time consumption is also recorded. Notice there is a 2-hour timeout for solving every formulae. Some formulae can timeout, as shown in paper. 
+This generates `out_ms3.txt` as output. All results **should be `unsat`**. Time consumption is also recorded. Notice there is a 2-hour timeout for solving every formula. Some formulas can time out, as shown in paper. 
 
 #### Naming of Properties
 
-Naming of both Cyclone specifications and SMT2 formulae are consists 4 segments `l[floors]_[config]_[properties]_[steps]` where:
+Naming of both Cyclone specifications and SMT2 formulas are consists 4 segments `l[floors]_[config]_[properties]_[steps]` where:
 - `[floors]` is the total number of floors
 - `[config]` is either `stc` (for fixed configuration) or `dyn` (for dynamic configuration)
 - `[properties]` consists of verified properties, where `l01` denotes Floor Reachability (FR) properties, and `m0123` denotes Direction Switching (DS) properties. 
@@ -75,11 +75,11 @@ Files in `/scene` are 10 testing scenarios of Table 5 and 6. To reproduce, first
 
 ```shell
 # There are totally 6 zip files
-# the quote is mandatory
+# the quotes are mandatory
 unzip 'form*.zip'
 ```
 
-Make sure all `.smt2` files are **at same directory** of `.sh` scripts. Then use `bash exec_[solver].sh` for solving the set of formulae using particular solver (see above table for details). For instance, using CVC5 (requires `cvc5` executable be configured in `PATH`):
+Make sure all `.smt2` files are **at same directory** of `.sh` scripts. Then use `bash exec_[solver].sh` for solving the set of formulas using particular solver (see above table for details). For instance, using CVC5 (requires `cvc5` executable be configured in `PATH`):
 
 ```shell
 bash exec_cvc5.sh
@@ -91,7 +91,7 @@ Note that it would take large memory consumption for some solvers, such as OpenS
 
 ### SMT2 File Suffix Explanations
 
-The `smt2` files have different file suffix from different code-generation approaches. The following table explains the source. Each `.cyclone` specification generates the following 3 variations of SMT2 formulae:
+The `smt2` files have different file suffix from different code-generation approaches. The following table explains the source. Each `.cyclone` specification generates the following 3 variations of SMT2 formulas:
 
 |SMT2 Suffix|Compiler|Description|
 |---|---|---|
@@ -103,7 +103,7 @@ The `smt2` files have different file suffix from different code-generation appro
 
 ## Additional Instructions
 
-The above instruction explains how to solve each pre-generated SMT2 file. The following section explains how to generate SMT2 formulae from cyclone specifications, and how to generate cyclone specifications from scripts. 
+The above instruction explains how to solve each pre-generated SMT2 file. The following section explains how to generate SMT2 formulas from cyclone specifications, and how to generate cyclone specifications from scripts. 
 
 ### Running Cyclone Specification
 
@@ -119,7 +119,7 @@ There are 3 ways to generate SMT2 files from Cyclone specification, corresponds 
 
 First set the correct folder of Cyclone to `CYCLONE_PATH` of `/cyclone-versions/cyclone-gen` (second line) Add the `cyclone-gen` script to `PATH`. 
 
-Then, one can use this script to generate SMT2 formulae. The naming follows above suffix: 
+Then, one can use this script to generate SMT2 formulas. The naming follows above suffix: 
 ```shell
 cyclone-gen l3_stc.cyclone
 ```
@@ -127,7 +127,7 @@ Generates a `l3_stc.cyclone_gen.smt2` in integer encoding.
 
 ##### Manually
 
-First, to compile formulae from Cyclone (Java), one must set `option-generation="SMT2"` at beginning of each `.cyclone` file. Then similar to running:
+First, to compile formulas from Cyclone (Java), one must set `option-generation="SMT2"` at beginning of each `.cyclone` file. Then similar to running:
 
 ```shell
 # optionally use -Xss and -Xmx parameter to adjust memory allocation
@@ -164,7 +164,7 @@ Then `l3_stc.smt2` can be checked by Z3 or other solvers. The output SMT2 file i
 
 #### Using Cyclone (Rust) with Bit-Vector Encoding
 
-Additionally, the Rust version supports automatic conversion for `int` to signed `bv`. For a 3-floor elevator, it takes `ceil(log2(3)) + 1 = 3` bits to correctly represent maximum possible integer (i.e, the floor) in specification. Hence, one can generate BV formulae by:
+Additionally, the Rust version supports automatic conversion for `int` to signed `bv`. For a 3-floor elevator, it takes `ceil(log2(3)) + 1 = 3` bits to correctly represent maximum possible integer (i.e, the floor) in specification. Hence, one can generate BV formulas by:
 
 ```shell
 # optionally use --stack-size <bits> to adjust stack size for large input
@@ -179,8 +179,8 @@ Code generation scripts are placed at `/scripts`. All scripts are written in Jav
 
 - `liftblast.js` is for Cyclone model generation where parameters of `n`, `k`, etc... can be passed in as JSON format (see sourcecode) or manually changed in-need. 
 - `manifest.js` is a library-purposed file containing basic information of directories of compilers and solvers. 
-- `liftcase.js` generates Cyclone spec with SMT formulae of scenario testing (modify `outdir` variable for output directory).
-- `liftprop.js` generates Cyclone spec with SMT formulae of property checking (modify `outdir` variable for output directory).
+- `liftcase.js` generates Cyclone spec with SMT formulas of scenario testing (modify `outdir` variable for output directory).
+- `liftprop.js` generates Cyclone spec with SMT formulas of property checking (modify `outdir` variable for output directory).
 
 To use any above script, one may explicitly update corresponding variables (e.g. output directory) of the script. 
 

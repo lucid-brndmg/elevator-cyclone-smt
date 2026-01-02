@@ -1,10 +1,12 @@
 const {spawnSync} = require("node:child_process");
-const path = require("node:path");
 const liftgen = "liftblast.js"
 
-const cyclone_native = "D:\\mu\\cyclone-tutorial\\analyzer-native\\cyclone-rs\\target\\debug\\cyclone-native.exe"
+// the path to cyclone-native executable
+const cyclone_native = "cyclone-native"
+// the stack size (bits)
 const cyclone_native_stack = 512 * 1024 * 1024
 
+// the timeout
 const to_sec = 2 * 60 * 60
 
 const lia_solvers = [
@@ -22,7 +24,7 @@ const bv_solvers = [
   {id: "y2bv", h: (f, sfx = "") => `echo "(set-logic QF_BV)" > y2bv${sfx}.smt2\ncat ${f} >> y2bv${sfx}.smt2\nyices-smt2 -t ${to_sec} -s y2bv${sfx}.smt2 &>> out_y2bv${sfx}.txt\necho "fin ${f}" >> out_y2bv${sfx}.txt\n`}
 ]
 
-// option-timeout currently isn't handled in cyclone-native thus coreutils timeout command do the trick (bit hack)
+
 const cyclone = (f, sfx = "") => `timeout ${to_sec} cyclone ${f} &>> out_cyclone${sfx}.txt\necho "fin ${f}" >> out_cyclone${sfx}.txt\n`
 
 const exec_opts = {
@@ -70,7 +72,7 @@ const filename_parse = name => {
   ].join(".")
 }
 
-const TO = "7200"
+const TO = to_sec.toString()
 // const non_existing = ["l10_stc_m0123.cyclone_gen.smt2", "l10_stc_l01m0123.cyclone_gen.smt2"]
 
 const handle_fin = (results, line, time) => {

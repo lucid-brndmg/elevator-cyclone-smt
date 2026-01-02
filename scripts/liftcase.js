@@ -15,6 +15,7 @@ const U = "U"
 const D = "D"
 const I = "I"
 
+// output directory of specification files
 const outdir = path.join("../../cases")
 
 const range = (lo, hi) => new Array(hi - lo).fill().map((_, i) => i + lo)
@@ -66,6 +67,7 @@ const path_gen_det = (conf) => {
   return p.length * 2
 }
 
+// testing configurations (Table 5)
 const configs = [
   // n, c, u, d, f, m
   [20, [10, 15, 18], [18], [], 12, U],
@@ -74,11 +76,9 @@ const configs = [
   [30, [], [28], [25], 26, I],
   [30, [10, 20, 25], [], [11], 22, D],
   [35, range(0, 12), range(8, 16), [], 0, U],
-  // [40, [20, 23, 1, 8, 15], range(0, 5).concat(range(20, 30)), [8, 20, 32], 36, D],
   [40, [30, 33, 27, 28, 21], range(25, 30), [28, 35, 32], 24, D],
   [45, [44], range(35, 40), range(34, 40), 42, U],
   [50, range(33, 41), range(37, 40), range(36, 41), 35, D],
-  // [50, [49], [], range(40, 45), 30, U],
   [50, [49], [], range(38, 45), 42, U]
 ]
 // const configs = JSON.parse(fs.readFileSync("../../rand_cases.json", "utf8"))
@@ -166,44 +166,6 @@ for (let [base, conf] of bc) {
     `echo "done ${base_bv}"`,
   ))
 
-
-  // let [n, lc, lu, ld, f, m] = configs[i]
-  // const base = `s${i + 1}.cyclone`
-  // const optOut = path.join(outdir, base)
-  // const conf = {
-  //   optPropCheck: false,
-  //   optEffect: false,
-  //   optDebug: false,
-  //   optOut,
-  //   optN: n,
-  //
-  //   initFloor: f,
-  //   initMode: m,
-  //   initReqCar: lc,
-  //   initReqUp: lu,
-  //   initReqDown: ld,
-  // }
-  //
-  // const h_gen = spawnSync("node", [liftgen, JSON.stringify(conf)], exec_opts)
-  // console.log("gen cyclone", h_gen);
-  //
-  // const bits = Math.ceil(Math.log2(n)) + 1
-  // const base_bv = `s${i+1}.cyclone.bv.smt2`
-  // const base_lia = `s${i+1}.cyclone.lia.smt2`
-  // const smt_bv = path.join(outdir, base_bv)
-  // const smt_lia = path.join(outdir, base_lia)
-  //
-  // const h_cmp_lia = spawnSync(cyclone_native, [optOut, "--codegen", smt_lia], exec_opts)
-  // console.log("gen lia", h_cmp_lia);
-  //
-  // const h_cmp_bv = spawnSync(cyclone_native, [optOut, "--codegen", smt_bv, "--option-bv-int", "--option-bv-int-size", bits], exec_opts)
-  // console.log("gen bv", h_cmp_bv);
-  //
-  // // sh_cyclone.push(cyclone(base))
-  // sh_lia_solvers.forEach(({id, lines}, i) => lines.push(lia_solvers[i].h(base_lia)))
-  // sh_bv_solvers.forEach(({id, lines}, i) => lines.push(bv_solvers[i].h(base_bv)))
-  //
-  // console.log("gen done", i + 1);
 }
 
 for (let {id, lines} of sh_lia_solvers.concat(sh_bv_solvers).concat([sh_gen_cyclone])) {

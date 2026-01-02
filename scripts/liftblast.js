@@ -25,7 +25,7 @@ let initReqDown = [1, 2]
 
 // let initPropHalt = null // [0]
 // let initPropIdle = null // [0, 1, 2]
-let initPropLH = null // [1, 2]
+let initPropLH = null // [0, 1]
 let initPropMS = null // [0, 1, 2, 3] // 0, 1, 2 (U, D), 3 (U, D)
 
 const input = (process.argv[2] ?? "").trim()

@@ -8,6 +8,7 @@ const {
   compile_cyclone_native,
 } = require("./manifest")
 
+// output directory of generated specifications
 const outdir = path.resolve("../../prop_next")
 
 const codegen = true
@@ -23,7 +24,7 @@ const gen_dynamic = true
 const gen_lia = true
 const gen_bv = true
 
-const ns = [10, 20, 50, 100]
+const ns = [3, 5, 10, 15]
 const ks = [4, 8, 16, 32]
 
 const k_force = 1

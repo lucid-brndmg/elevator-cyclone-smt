@@ -1,0 +1,8 @@
+#!/bin/bash
+
+D=$(dirname "$(realpath $0)")
+
+# this DIRECTORY should contain "cyclone.jar" file
+CYCLONE_PATH="$D/cyclone1359"
+
+java -jar "$CYCLONE_PATH/cyclone.jar" $1

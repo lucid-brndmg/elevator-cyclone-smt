@@ -59,7 +59,7 @@ goal {
         && !initial(l_d_2) // init down call at L2
     ;
 
-    // finds a possible path of 8 elevator-actions (16 steps, 16 / 2 = 8)
+    // finds a possible path of 16 steps
     // there exists many possibilities
     // for instance, the elevator can 'stuck' at a particular floor, if there are user continuously requesting to go to that floor
     check for 16  reach (MoveUp, MoveDown, D, SetMotionUp, SetMotionDown, SetIdle, L0, L1, L2)

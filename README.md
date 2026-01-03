@@ -234,9 +234,11 @@ The `smt2` files have different file suffix from different [formula-generation a
 
 The above instruction explains how to solve each pre-generated SMT2 file. The following section explains how to generate SMT2 formulas from cyclone specifications, and how to generate cyclone specifications from scripts. 
 
+Here we assume [step 1 of above instruction](#step-1-preparation) is prepared and `source env.sh` is executed beforehand.
+
 ### Running Cyclone Specification
 
-There are 3 ways to run these examples. Here we assume `source env.sh` is executed beforehand. 
+There are 3 ways to run a Cyclone specification. 
 
 #### Online Editor
 Copy & paste the content of a particular `.cyclone` file to [Cyclone online editor](https://cyclone.cs.nuim.ie/editor). Click "Run" button to see effect. 

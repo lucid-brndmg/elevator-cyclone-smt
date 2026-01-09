@@ -1,6 +1,6 @@
 #!/bin/bash
 
-D=$(dirname "$(realpath $0)")
+D=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # this DIRECTORY should contain "cyclone.jar" file
 CYCLONE_PATH="$D/cyclone1359"

@@ -1,5 +1,5 @@
 Trace for Lift3
-[Time Stamp]:13:31:00, Jan-01-2026
+[Time Stamp]:02:53:53, Jan-09-2026
 [Location]:./l3_stc.cyclone
 [States]:9 
 D L0 L1 L2 MoveDown MoveUp SetIdle SetMotionDown SetMotionUp 

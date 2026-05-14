@@ -2,6 +2,12 @@
 
 Materials of *Verifying an Elevator Scheduling Control System* by Huan Zhang, Haoyang Lu, Long Cheng and Hao Wu. 
 
+This work has been accepted by The 10th International Workshop on Testing Extra-Functional Properties and Quality Characteristics of Software Systems (ITEQS@ICST 2026).
+
+**Abstract:** Elevators are crucial for modern buildings, transporting large volumes of passengers across multiple floors every day. Among their components, the scheduling control system plays a central role in determining passenger waiting times and overall efficiency. However, traditional simulation-based testing is time-consuming and costly, which limits its scalability.
+
+We present an approach that combines both verification and testing for elevator scheduling systems. Our technique models the scheduling logic as a state machine and translates it into Satisfiability Modulo Theories (SMT) formulas that can be efficiently solved and tested by SMT solvers. Preliminary evaluation shows that our technique can verify key properties of scheduling control logic. Our experimental results demonstrate that the approach scales reasonably well with increasing numbers of floors and requests. This can provide a potential practical and automated verification solution for industrial elevator controllers.
+
 ## Contents
 This repository contains the following directories:
 
@@ -13,7 +19,7 @@ This repository contains the following directories:
 
 This document contains the following instructions:
 - [Reproducing table 3-6 in paper using provided SMT2 formulas](#reproducibility-instructions)
-- [How to run Cyclone specifications directly](#running-cyclone-specification)
+- [How to check Cyclone specifications directly](#running-cyclone-specification)
 - [How to generate SMT2 formula from Cyclone Specification](#generating-smt2-from-cyclone-specifications)
 
 
@@ -377,8 +383,8 @@ Further explanation of the above configuration argument:
 
     // --- (optional) properties to be proven ---
     // only takes effect if "optPropCheck": true
-    "initPropLH": [0, 1], // FR property, ranges 0 to 1
-    "initPropMS": [0, 1, 2, 3] // DS property, ranges 0 to 3
+    "initPropFR": [0, 1], // FR property, ranges 0 to 1
+    "initPropDS": [0, 1, 2, 3] // DS property, ranges 0 to 3
 }
 ```
 

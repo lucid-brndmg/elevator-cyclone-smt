@@ -22,6 +22,9 @@ This document contains the following instructions:
 - [How to check Cyclone specifications directly](#running-cyclone-specification)
 - [How to generate SMT2 formula from Cyclone Specification](#generating-smt2-from-cyclone-specifications)
 
+Useful Links:
+- [Cyclone Online Editor](https://cyclone.cs.nuim.ie)
+- [Download Cyclone](https://classicwuhao.github.io/cyclone_tutorial/installation.html)
 
 ## REPRODUCIBILITY INSTRUCTIONS
 
